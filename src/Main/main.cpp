@@ -10,7 +10,14 @@
 
 int main()
 {
-    AdminCheck admin_check{};
-    std::cout << "Is running as admin: " << std::flush << std::boolalpha << IsRunningAsAdmin() << std::noboolalpha << std::endl;
+    try
+    {
+        AdminCheck admin_check{};
+        std::cout << "Is running as admin: " << std::flush << std::boolalpha << admin_check.IsAdmin() << std::noboolalpha << std::endl;
+    }
+    catch (std::exception& e)
+    {
+        std::cerr << "Exception: " << e.what() << std::endl;
+    }
     return 0;
 }

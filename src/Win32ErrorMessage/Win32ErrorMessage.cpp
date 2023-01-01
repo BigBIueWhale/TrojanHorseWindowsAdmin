@@ -27,7 +27,7 @@ std::string Win32ErrorMessage::GetErrorMessage(std::uint32_t errorCode)
            << " after calling GetLastError() with error " << errorCode;
         throw std::runtime_error{ ERROR_MESSAGE(ss.str()) };
     }
-    std::string errorMessage{ lpMsgBuf, dwChars };
+    std::string errorMessage(lpMsgBuf, dwChars);
     LocalFree(lpMsgBuf);
     return errorMessage;
 }
