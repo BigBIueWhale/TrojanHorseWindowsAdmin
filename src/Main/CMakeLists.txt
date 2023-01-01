@@ -1,5 +1,6 @@
 add_executable(TrojanHorseWindowsAdmin main.cpp)
 target_link_libraries(TrojanHorseWindowsAdmin PUBLIC AdminCheck)
+target_link_libraries(TrojanHorseWindowsAdmin PUBLIC PathToCurrentExecutable)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     # Run executable as administrator

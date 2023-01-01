@@ -22,7 +22,7 @@ public:
         {
             DWORD dwError = GetLastError();
             std::stringstream ss;
-            ss << "AllocateAndInitializeSid failed with error " << dwError;
+            ss << "AllocateAndInitializeSid failed with error " << Win32ErrorMessage{}.GetErrorMessage(dwError);
             throw std::runtime_error{ ERROR_MESSAGE(ss.str()) };
         }
     }
@@ -41,7 +41,7 @@ public:
         {
             DWORD dwError = GetLastError();
             std::stringstream ss;
-            ss << "GetSidIdentifierAuthority failed with error " << dwError;
+            ss << "GetSidIdentifierAuthority failed with error " << Win32ErrorMessage{}.GetErrorMessage(dwError);
             throw std::runtime_error{ ERROR_MESSAGE(ss.str()) };
         }
     }
@@ -61,7 +61,7 @@ bool AdminCheck::IsAdmin()
     {
         DWORD dwError = GetLastError();
         std::stringstream ss;
-        ss << "CheckTokenMembership failed with error " << dwError;
+        ss << "CheckTokenMembership failed with error " << Win32ErrorMessage{}.GetErrorMessage(dwError);
         throw std::runtime_error{ ERROR_MESSAGE(ss.str()) };
     }
     return bIsMember;

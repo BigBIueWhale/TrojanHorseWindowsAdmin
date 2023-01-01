@@ -1,5 +1,6 @@
 #include <error_message_macro.hpp>
 #include <AdminCheck.hpp>
+#include <PathToCurrentExecutable.hpp>
 #include <iostream>
 #include <ios>
 #include <iomanip>
@@ -7,20 +8,27 @@
 #include <stdexcept>
 #include <sstream>
 #include <type_traits>
-#include <Windows.h>
 
 int main()
 {
     try
     {
-        AdminCheck admin_check{};
-        if (!admin_check.IsAdmin())
+        if (!AdminCheck{}.IsAdmin())
         {
             throw std::runtime_error{ ERROR_MESSAGE("Program must be run as administrator") };   
         }
         std::cout << "Program is running as administrator" << std::endl;
-        // Use Win32API to register the current process as a service to be run at boot time as administrator
-        
+        // Create a Scheduled Task to trigger at startup.
+        // In the Create Task dialog, select the following:
+        // 1. General (tab), Run with highest privileges
+        // 2. Triggers (tab), At startup
+        // Make the action run the current executable of this program.
+        // Use Win32API to do this programmatically.
+
+        // Get the path to the current executable.
+        const std::wstring path_to_current_executable = PathToCurrentExecutable{}.GetPath();
+        std::wcout << "Path to current executable: " << path_to_current_executable << std::endl;
+        // Create a Scheduled Task using the win32api
     }
     catch (std::exception& e)
     {

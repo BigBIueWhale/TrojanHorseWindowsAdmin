@@ -1,0 +1,2 @@
+add_library(PathToCurrentExecutable STATIC PathToCurrentExecutable.cpp PathToCurrentExecutable.hpp)
+target_link_libraries(PathToCurrentExecutable PRIVATE Win32ErrorMessage)
