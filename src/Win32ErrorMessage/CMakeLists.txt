@@ -1,0 +1,1 @@
+add_library(Win32ErrorMessage STATIC Win32ErrorMessage.cpp Win32ErrorMessage.hpp)
