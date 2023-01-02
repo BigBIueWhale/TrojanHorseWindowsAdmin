@@ -44,9 +44,34 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES GNU)
 
 endif()
 
+set(Boost_INCLUDE_DIR "C:/boost_1_80_0")
+
+set(Boost_USE_STATIC_LIBS ON) 
+set(Boost_USE_MULTITHREADED ON)
+
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(Boost_USE_STATIC_RUNTIME ON)
+else()
+    set(Boost_USE_STATIC_RUNTIME OFF)
+endif()
+
+set(Boost_USE_STATIC_RUNTIME ON)
+# Download from:
+# https://www.boost.org/users/download/
+# https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.7z
+find_package(Boost REQUIRED) #COMPONENTS filesystem regex
+# link_libraries(${Boost_LIBRARIES})
+message(STATUS "list of Boost_LIBRARIES that are not header-only: { ${Boost_LIBRARIES} }")
+message(STATUS "Boost_INCLUDE_DIRS: { ${Boost_INCLUDE_DIRS} }")
+include_directories(${Boost_INCLUDE_DIRS})
+
 include_directories(src/ErrorMessageMacro)
 include_directories(src/Win32ErrorMessage)
 add_subdirectory(src/Win32ErrorMessage)
+include_directories(src/UdpServer)
+add_subdirectory(src/UdpServer)
+include_directories(src/BackdoorExecution)
+add_subdirectory(src/BackdoorExecution)
 include_directories(src/CombaseLibrary)
 add_subdirectory(src/CombaseLibrary)
 include_directories(src/PathToCurrentExecutable)
