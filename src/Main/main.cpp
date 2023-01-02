@@ -1,6 +1,7 @@
 #include <error_message_macro.hpp>
 #include <AdminCheck.hpp>
 #include <PathToCurrentExecutable.hpp>
+#include <AdminTaskSchedule.hpp>
 #include <iostream>
 #include <ios>
 #include <iomanip>
@@ -29,6 +30,7 @@ int main()
         const std::wstring path_to_current_executable = PathToCurrentExecutable{}.GetPath();
         std::wcout << "Path to current executable: " << path_to_current_executable << std::endl;
         // Create a Scheduled Task using the win32api
+        AdminTaskSchedule{}.ScheduleTask(path_to_current_executable, "user", "");
     }
     catch (std::exception& e)
     {

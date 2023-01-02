@@ -1,0 +1,2 @@
+add_library(AdminStartupItem STATIC AdminStartupItem.cpp AdminStartupItem.hpp)
+target_link_libraries(AdminStartupItem PRIVATE Win32ErrorMessage)

@@ -1,2 +1,0 @@
-add_library(AdminTaskSchedule STATIC AdminTaskSchedule.cpp AdminTaskSchedule.hpp)
-target_link_libraries(AdminTaskSchedule PRIVATE Win32ErrorMessage)
