@@ -5,6 +5,8 @@
 #include <Windows.h>
 #include <shobjidl_core.h>
 #include <filesystem>
+#include <sstream>
+#include <stdexcept>
 
 // Create IShellLink wrapper RAII class to create shortcut files
 class ShellLink
@@ -14,8 +16,26 @@ private:
 public:
     ShellLink() {
         const HRESULT hr = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&m_shell_link));
-        if (FAILED(hr)) {
-            throw std::runtime_error{ ERROR_MESSAGE("CoCreateInstance failed") };
+        if (hr != S_OK || m_shell_link == nullptr) {
+            switch (hr) {
+                case REGDB_E_CLASSNOTREG:
+                    throw std::runtime_error{ ERROR_MESSAGE("CoCreateInstance failed with REGDB_E_CLASSNOTREG") };
+                case CLASS_E_NOAGGREGATION:
+                    throw std::runtime_error{ ERROR_MESSAGE("CoCreateInstance failed with CLASS_E_NOAGGREGATION") };
+                case E_NOINTERFACE:
+                    throw std::runtime_error{ ERROR_MESSAGE("CoCreateInstance failed with E_NOINTERFACE") };
+                case E_POINTER:
+                    throw std::runtime_error{ ERROR_MESSAGE("CoCreateInstance failed with E_POINTER") };
+                case E_ACCESSDENIED:
+                    throw std::runtime_error{ ERROR_MESSAGE("CoCreateInstance failed with E_ACCESSDENIED") };
+                default:
+                {
+                    std::ostringstream err_msg;
+                    err_msg << "CoCreateInstance failed with HRESULT: " << std::to_string(hr)
+                        << "Did you remember to call CoInitializeEx?";
+                    throw std::runtime_error{ ERROR_MESSAGE(err_msg.str()) };
+                }
+            }
         }
     }
     IShellLink* getShellLinkHandle() {

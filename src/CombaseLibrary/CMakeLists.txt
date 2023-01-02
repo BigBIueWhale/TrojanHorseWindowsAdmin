@@ -1,0 +1,2 @@
+add_library(CombaseLibrary CombaseLibrary.cpp CombaseLibrary.hpp)
+target_link_libraries(CombaseLibrary PUBLIC Win32ErrorMessage)
