@@ -65,6 +65,7 @@ message(STATUS "list of Boost_LIBRARIES that are not header-only: { ${Boost_LIBR
 message(STATUS "Boost_INCLUDE_DIRS: { ${Boost_INCLUDE_DIRS} }")
 include_directories(${Boost_INCLUDE_DIRS})
 
+include_directories(src/ProtoMessages)
 include_directories(src/ErrorMessageMacro)
 include_directories(src/Win32ErrorMessage)
 add_subdirectory(src/Win32ErrorMessage)

