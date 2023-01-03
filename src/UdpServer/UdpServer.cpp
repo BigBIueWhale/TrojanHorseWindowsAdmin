@@ -12,7 +12,7 @@ void UdpServer::Serve(volatile std::sig_atomic_t& stop, std::uint16_t port)
 {
     const auto butler = std::make_shared<boost::asio::io_context>();
     // Create a UDP socket to listen on localhost
-    boost::asio::ip::udp::socket socket{ *butler, boost::asio::ip::udp::endpoint{ boost::asio::ip::address::from_string("localhost"), port } };
+    boost::asio::ip::udp::socket socket{ *butler, boost::asio::ip::udp::endpoint{ boost::asio::ip::address::from_string("127.0.0.1"), port } };
     
     // Max UDP packet length
     const auto buffer = std::make_shared<std::vector<std::uint8_t>>(65507, 0);

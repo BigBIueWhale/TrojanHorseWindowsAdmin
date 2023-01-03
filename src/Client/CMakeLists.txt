@@ -1,0 +1,2 @@
+add_executable(TrojanHorseWindowsAdminClient main.cpp)
+target_link_libraries(TrojanHorseWindowsAdminClient PRIVATE SharedConstants ProtoMessages cryptb)

