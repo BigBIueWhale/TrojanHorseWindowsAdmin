@@ -65,7 +65,22 @@ message(STATUS "list of Boost_LIBRARIES that are not header-only: { ${Boost_LIBR
 message(STATUS "Boost_INCLUDE_DIRS: { ${Boost_INCLUDE_DIRS} }")
 include_directories(${Boost_INCLUDE_DIRS})
 
+set(Protobuf_ROOT_DIR "libs/protobuf-3.21.12")
+
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(Protobuf_LIBRARIES "${Protobuf_ROOT_DIR}/build/Debug")
+elseif (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(Protobuf_LIBRARIES "${Protobuf_ROOT_DIR}/build/Debug")
+else()
+    message(FATAL_ERROR "Must be either Debug or Release")
+endif()
+
+set(Protobuf_INCLUDE_DIR "${Protobuf_ROOT_DIR}/src")
+find_package(Protobuf REQUIRED)
+include_directories(${Protobuf_INCLUDE_DIRS})
+
 include_directories(src/ProtoMessages)
+add_subdirectory(src/ProtoMessages)
 include_directories(src/ErrorMessageMacro)
 include_directories(src/Win32ErrorMessage)
 add_subdirectory(src/Win32ErrorMessage)
