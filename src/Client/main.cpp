@@ -28,10 +28,10 @@ int main(const int argc, const char *const *const argv)
 
         const boost::multiprecision::cpp_int private_key_d{ argv[1] };
         const std::string command_string{ argv[2] };
-        Command command;
-        command.set_command(command_string);
-        command.set_unique_identifier(gen_truly_random_bytes());
-        const boost::multiprecision::cpp_int message_hash = hash(command);
+        auto command = std::make_unique<Command>();
+        command->set_command(command_string);
+        command->set_unique_identifier(gen_truly_random_bytes());
+        const boost::multiprecision::cpp_int message_hash = hash(*command);
         const auto signature_opt{
             cryptb::rsa{
                 boost::multiprecision::cpp_int{ g_public_key.e },
@@ -45,10 +45,10 @@ int main(const int argc, const char *const *const argv)
             return -1;
         }
         VerifiedCommand verified_command;
-        verified_command.set_allocated_command(&command);
+        verified_command.set_allocated_command(command.release());
         const std::vector<std::uint8_t> serialized_signature_vec = to_bytes(signature_opt.value());
         std::string serialized_signature_str = std::string{ reinterpret_cast<const char*>(serialized_signature_vec.data()), serialized_signature_vec.size() };
-        verified_command.set_allocated_signature(&serialized_signature_str);
+        verified_command.set_signature(serialized_signature_str);
         const std::string data_to_send = verified_command.SerializeAsString();
         std::cout << "Sending the command. Data is " << data_to_send.size() << " bytes long" << std::endl;
 
