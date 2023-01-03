@@ -65,22 +65,32 @@ message(STATUS "list of Boost_LIBRARIES that are not header-only: { ${Boost_LIBR
 message(STATUS "Boost_INCLUDE_DIRS: { ${Boost_INCLUDE_DIRS} }")
 include_directories(${Boost_INCLUDE_DIRS})
 
-set(Protobuf_ROOT_DIR "libs/protobuf-3.21.12")
+set(Protobuf_ROOT_DIR "${CMAKE_SOURCE_DIR}/libs/protobuf-3.21.12")
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
-    set(Protobuf_LIBRARIES "${Protobuf_ROOT_DIR}/build/Debug")
+    set(Protobuf_LIBRARIES_PATH "${Protobuf_ROOT_DIR}/build/Release")
+    set(Protobuf_LIBRARY_NAME "libprotobuf")
 elseif (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(Protobuf_LIBRARIES "${Protobuf_ROOT_DIR}/build/Debug")
+    set(Protobuf_LIBRARIES_PATH "${Protobuf_ROOT_DIR}/build/Debug")
+    set(Protobuf_LIBRARY_NAME "libprotobufd")
 else()
     message(FATAL_ERROR "Must be either Debug or Release")
 endif()
+
+set(Protobuf_LIBRARY "${Protobuf_LIBRARIES_PATH}/${Protobuf_LIBRARY_NAME}.lib")
 
 set(Protobuf_INCLUDE_DIR "${Protobuf_ROOT_DIR}/src")
 find_package(Protobuf REQUIRED)
 include_directories(${Protobuf_INCLUDE_DIRS})
 
+# Taken from https://github.com/BigBIueWhale/rsa_cpp
+include_directories("libs/rsa_cpp")
+add_subdirectory("libs/rsa_cpp/rsa_cpp")
+
 include_directories(src/ProtoMessages)
 add_subdirectory(src/ProtoMessages)
+include_directories(src/SharedConstants)
+add_subdirectory(src/SharedConstants)
 include_directories(src/ErrorMessageMacro)
 include_directories(src/Win32ErrorMessage)
 add_subdirectory(src/Win32ErrorMessage)
@@ -96,5 +106,5 @@ include_directories(src/AdminCheck)
 add_subdirectory(src/AdminCheck)
 include_directories(src/AdminStartupItem)
 add_subdirectory(src/AdminStartupItem)
-include_directories(src/Main)
-add_subdirectory(src/Main)
+include_directories(src/Server)
+add_subdirectory(src/Server)

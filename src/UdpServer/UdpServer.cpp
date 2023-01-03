@@ -19,13 +19,19 @@ void UdpServer::Serve(volatile std::sig_atomic_t& stop, std::uint16_t port)
 
     socket.async_receive(boost::asio::buffer(*buffer), [this, buffer](const boost::system::error_code& error, std::size_t bytes_received)
     {
-        if (!error)
-        {
-            this->OnReceivedPacket(std::span<const std::uint8_t>{ buffer->data(), bytes_received });
+        try {
+            if (!error)
+            {
+                this->OnReceivedPacket(std::span<const std::uint8_t>{ buffer->data(), bytes_received });
+            }
+            else
+            {
+                this->LogError(ERROR_MESSAGE(error.message()));
+            }
         }
-        else
+        catch (const std::exception& e)
         {
-            this->LogError(ERROR_MESSAGE(error.message()));
+            this->LogError(ERROR_MESSAGE(e.what()));
         }
     });
 

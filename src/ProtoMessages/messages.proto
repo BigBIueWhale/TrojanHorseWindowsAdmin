@@ -1,6 +1,32 @@
 syntax = "proto3";
 
-message Person {
-  string name = 1;
-  int32 age = 2;
+message Command {
+  string command = 1;
+
+  // Makes sure that each command is unique and can't be replayed
+  // The unique string is hashed
+  bytes unique_identifier = 2;
+}
+
+message VerifiedCommand {
+  Command command = 1;
+  
+  // The bytes field: "digital_signature" represents the serialized data of:
+  // boost::multiprecision::cpp_int
+  //
+  // Serialized using:
+  //   const auto num = boost::multiprecision::cpp_int{ "298310237" };
+  //   std::vector<uint8_t> vec;
+  //   boost::multiprecision::export_bits(num, std::back_inserter(vec), 8, true);
+  // Deserialized using:
+  //   const auto vec = std::vector<uint8_t>{ 0x12, 0x34, 0x56, 0x78 };
+  //   auto num = boost::multiprecision::cpp_int{};
+  //   boost::multiprecision::import_bits(num, vec.begin(), vec.end(), 8, true)
+  //
+  // The "digital_signature" is the result of:
+  // using libs/rsa_cpp
+  // to sha512 hash the serialized data of the Command "command"
+  // and then applying the RSA digital signature algorithm with the private key.
+
+  bytes signature = 2;
 }
