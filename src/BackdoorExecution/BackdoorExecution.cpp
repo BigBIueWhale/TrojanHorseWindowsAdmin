@@ -11,7 +11,7 @@
 #include <messages.pb.h>
 #include <CommandHash.hpp>
 
-void BackdoorExecution::Serve(volatile std::sig_atomic_t& stop, std::uint16_t port, PublicKey_t public_key)
+void BackdoorExecution::Serve(volatile std::sig_atomic_t& stop, std::uint16_t port, const PublicKey_t& public_key)
 {
     m_public_key = std::move(public_key);
     UdpServer::Serve(stop, port);

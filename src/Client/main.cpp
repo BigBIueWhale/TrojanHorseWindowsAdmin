@@ -51,7 +51,7 @@ int main(const int argc, const char *const *const argv)
         verified_command.set_signature(serialized_signature_str);
         const std::string data_to_send = verified_command.SerializeAsString();
         std::cout << "Sending the command. Data is " << data_to_send.size() << " bytes long" << std::endl;
-
+        send_data(data_to_send);
     }
     catch (std::exception& e)
     {
