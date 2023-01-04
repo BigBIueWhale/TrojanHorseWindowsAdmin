@@ -126,12 +126,17 @@ void AdminStartupItem::Create(std::wstring executable_path)
         throw std::runtime_error{ ERROR_MESSAGE(oss.str()) };
     }
 
+    // Set IPrincipal::put_GroupId to administrators
+    // This will allow the task to run with the highest privileges
+    // The special string is a well-known SID used for the administrators group
+    hr = pPrincipal->put_GroupId(_bstr_t(L"S-1-5-32-544"));
+
     // Set the principal
     hr = pPrincipal->put_RunLevel(TASK_RUNLEVEL_HIGHEST);
     if (FAILED(hr))
     {
         std::ostringstream oss;
-        oss << "Failed to set the principal. Error code: " << hr;
+        oss << "pPrincipal->put_RunLevel failed. Error code: " << hr;
         throw std::runtime_error{ ERROR_MESSAGE(oss.str()) };
     }
 
@@ -140,9 +145,10 @@ void AdminStartupItem::Create(std::wstring executable_path)
     if (FAILED(hr))
     {
         std::ostringstream oss;
-        oss << "Failed to set the principal. Error code: " << hr;
+        oss << "pPrincipal->put_LogonType failed. Error code: " << hr;
         throw std::runtime_error{ ERROR_MESSAGE(oss.str()) };
     }
+
 
     // Get the action collection
     hr = pTask->get_Actions(&pActionCollection);
