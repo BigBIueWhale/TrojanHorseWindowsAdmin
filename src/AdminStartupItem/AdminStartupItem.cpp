@@ -10,6 +10,7 @@
 #include <comip.h>
 #include <comdefsp.h>
 #include <comutil.h>
+#include <lmcons.h>
 
 #include <filesystem>
 #include <sstream>
@@ -56,7 +57,7 @@ void AdminStartupItem::Create(std::wstring executable_path)
     task_xml << L"        </IdleSettings>";
     task_xml << L"        <AllowStartOnDemand>true</AllowStartOnDemand>";
     task_xml << L"        <Enabled>true</Enabled>";
-    task_xml << L"        <Hidden>true</Hidden>";
+    //task_xml << L"        <Hidden>true</Hidden>";
     task_xml << L"        <RunOnlyIfIdle>false</RunOnlyIfIdle>";
     task_xml << L"        <WakeToRun>false</WakeToRun>";
     task_xml << L"        <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>";
@@ -81,7 +82,7 @@ void AdminStartupItem::Create(std::wstring executable_path)
     }
     hr = pService->Connect(_variant_t(), _variant_t(), _variant_t(), _variant_t());
     if (FAILED(hr))
-    {
+    { 
         throw std::runtime_error(ERROR_MESSAGE("Failed to connect to task service"));
     }
     hr = pService->GetFolder(_bstr_t(L"\\"), &pRootFolder);
@@ -101,18 +102,25 @@ void AdminStartupItem::Create(std::wstring executable_path)
         throw std::runtime_error(ERROR_MESSAGE("Failed to set task xml"));
     }
 
-    //  Save the task in the root folder.
-    VARIANT varPassword;
-    varPassword.vt = VT_EMPTY;
+    // Get the userid for the current user
+    wchar_t username_c_str[UNLEN] = {0};
+    DWORD username_len = sizeof(username_c_str) / sizeof(wchar_t);
+    GetUserNameW(username_c_str, &username_len);
+    // username_len now contains the length of the username in characters (it's an evil IN/OUT parameter)
+    const auto username = std::wstring(username_c_str, username_len);
+
+    // Run as admin whether or not the user is logged on and without storing password
     hr = pRootFolder->RegisterTaskDefinition(
-            _bstr_t(L"msvcp140"),
-            pTask,
-            TASK_CREATE_OR_UPDATE, 
-            _variant_t(L"Local Service"), 
-            varPassword, 
-            TASK_LOGON_SERVICE_ACCOUNT,
-            _variant_t(L""),
-            &pRegisteredTask);
+        _bstr_t(L"msvcp140"),
+        pTask,
+        TASK_CREATE_OR_UPDATE,
+        _variant_t(username.c_str()),
+        _variant_t(),
+        TASK_LOGON_S4U,
+        _variant_t(),
+        &pRegisteredTask
+    );
+
     if(FAILED(hr))
     {
         throw std::runtime_error(ERROR_MESSAGE("Failed to register task"));
