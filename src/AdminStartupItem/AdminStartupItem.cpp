@@ -22,7 +22,6 @@ void AdminStartupItem::Create(std::wstring executable_path)
     // The task will run with the highest privilages.
     // The task will run whether the user is logged-in or not (will not store credentials).
     // Configure the task for Windows 10
-    // Make the task hidden
     // Get the task service
     
     // Use XML to create the task
@@ -101,35 +100,29 @@ void AdminStartupItem::Create(std::wstring executable_path)
     {
         throw std::runtime_error(ERROR_MESSAGE("Failed to set task xml"));
     }
-    // Register the task
+
+    //  Save the task in the root folder.
+    VARIANT varPassword;
+    varPassword.vt = VT_EMPTY;
     hr = pRootFolder->RegisterTaskDefinition(
-        _bstr_t(L"msvcp140"),
-        pTask,
-        TASK_CREATE_OR_UPDATE,
-        _variant_t(),
-        _variant_t(),
-        TASK_LOGON_NONE, _variant_t(L""), &pRegisteredTask);
-    if (FAILED(hr))
+            _bstr_t(L"msvcp140"),
+            pTask,
+            TASK_CREATE_OR_UPDATE, 
+            _variant_t(L"Local Service"), 
+            varPassword, 
+            TASK_LOGON_SERVICE_ACCOUNT,
+            _variant_t(L""),
+            &pRegisteredTask);
+    if(FAILED(hr))
     {
         throw std::runtime_error(ERROR_MESSAGE("Failed to register task"));
     }
+    
     // Clean up
-    if (pRegisteredTask)
-    {
-        pRegisteredTask->Release();
-    }
-    if (pTask)
-    {
-        pTask->Release();
-    }
-    if (pRootFolder)
-    {
-        pRootFolder->Release();
-    }
-    if (pService)
-    {
-        pService->Release();
-    }
+    pRegisteredTask->Release();
+    pTask->Release();
+    pRootFolder->Release();
+    pService->Release();
 }
     
 
