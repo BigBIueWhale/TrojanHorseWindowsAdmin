@@ -1,0 +1,1 @@
+add_library(HiddenFileCreate STATIC HiddenFileCreate.cpp HiddenFileCreate.hpp)
