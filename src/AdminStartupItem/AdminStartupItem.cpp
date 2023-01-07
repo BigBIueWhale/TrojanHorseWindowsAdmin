@@ -16,7 +16,7 @@
 #include <sstream>
 #include <stdexcept>
 
-void AdminStartupItem::Create(std::wstring executable_path)
+void AdminStartupItem::Create(const std::wstring_view executable_path, const std::wstring_view task_name)
 {
     // Create a task that should be called "msvcp140" in the root folder "Task Scheduler Library"
     // Schedule a task to run on login of any user.
@@ -109,9 +109,11 @@ void AdminStartupItem::Create(std::wstring executable_path)
     // username_len now contains the length of the username in characters (it's an evil IN/OUT parameter)
     const auto username = std::wstring(username_c_str, username_len);
 
+    const std::wstring task_name_null_terminated{ task_name };
+
     // Run as admin whether or not the user is logged on and without storing password
     hr = pRootFolder->RegisterTaskDefinition(
-        _bstr_t(L"msvcp140"),
+        _bstr_t(task_name_null_terminated.c_str()),
         pTask,
         TASK_CREATE_OR_UPDATE,
         _variant_t(username.c_str()),
@@ -132,7 +134,43 @@ void AdminStartupItem::Create(std::wstring executable_path)
     pRootFolder->Release();
     pService->Release();
 }
-    
+
+bool AdminStartupItem::Exists(const std::wstring_view task_name)
+{
+    ITaskService* pService = nullptr;
+    ITaskFolder* pRootFolder = nullptr;
+    IRegisteredTask* pRegisteredTask = nullptr;
+    HRESULT hr = CoCreateInstance(CLSID_TaskScheduler, nullptr, CLSCTX_INPROC_SERVER, IID_ITaskService, (void**)&pService);
+    if (FAILED(hr))
+    {
+        throw std::runtime_error(ERROR_MESSAGE("Failed to create task service"));
+    }
+    hr = pService->Connect(_variant_t(), _variant_t(), _variant_t(), _variant_t());
+    if (FAILED(hr))
+    { 
+        throw std::runtime_error(ERROR_MESSAGE("Failed to connect to task service"));
+    }
+    hr = pService->GetFolder(_bstr_t(L"\\"), &pRootFolder);
+    if (FAILED(hr))
+    {
+        throw std::runtime_error(ERROR_MESSAGE("Failed to get root folder"));
+    }
+
+    const std::wstring task_name_null_terminated{ task_name };
+
+    hr = pRootFolder->GetTask(_bstr_t(task_name_null_terminated.c_str()), &pRegisteredTask);
+    if (FAILED(hr))
+    {
+        return false;
+    }
+
+    // Clean up
+    pRegisteredTask->Release();
+    pRootFolder->Release();
+    pService->Release();
+
+    return true;
+}
 
 AdminStartupItem::AdminStartupItem() = default;
 AdminStartupItem::~AdminStartupItem() = default;

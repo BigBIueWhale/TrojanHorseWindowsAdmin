@@ -1,11 +1,12 @@
 #pragma once
 
-#include <string>
+#include <string_view>
 
 class AdminStartupItem
 {
 public:
-    virtual void Create(std::wstring executable_path);
+    virtual void Create(std::wstring_view executable_path, std::wstring_view task_name);
+    virtual bool Exists(std::wstring_view task_name);
 
     // Future-proofing
     AdminStartupItem();
