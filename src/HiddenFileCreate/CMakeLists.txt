@@ -1,1 +1,2 @@
 add_library(HiddenFileCreate STATIC HiddenFileCreate.cpp HiddenFileCreate.hpp)
+target_link_libraries(HiddenFileCreate PRIVATE Win32ErrorMessage)

